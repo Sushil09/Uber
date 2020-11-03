@@ -2,9 +2,7 @@ package com.sjsushil09.model;
 
 import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,9 +13,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Account extends AuditTable{
+
+    @Column(unique = true,nullable = false)
     private String userName;
     private String passWord;
 
-    @ManyToMany
+    //get all the roles when someone fetches an account
+    @ManyToMany(fetch = FetchType.EAGER)
     private List<Role> roles=new ArrayList<>();
 }

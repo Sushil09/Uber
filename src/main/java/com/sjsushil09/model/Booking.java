@@ -1,5 +1,7 @@
 package com.sjsushil09.model;
 
+import com.sjsushil09.exceptions.InvalidActionForBooking;
+import com.sjsushil09.exceptions.InvalidOTPException;
 import lombok.*;
 
 import javax.persistence.*;
@@ -8,11 +10,14 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@Table(name = "booking")
 @Getter @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "booking", indexes = {
+        @Index(columnList = "passenger_id"),
+        @Index(columnList = "driver_id")
+})
 public class Booking extends AuditTable{
 
     @ManyToOne
@@ -25,7 +30,7 @@ public class Booking extends AuditTable{
     private BookingType bookingType;
 
     @OneToOne
-    private Review reviewByUser;
+    private Review reviewByPassenger;
 
     @OneToOne
     private Review reviewByDriver;
@@ -49,5 +54,21 @@ public class Booking extends AuditTable{
     @OneToOne
     private OTP rideStartOTP;
 
+    public void startRide(OTP otp) {
+        if(!bookingStatus.equals(BookingStatus.CAR_ARRIVED))
+            throw new InvalidActionForBooking("Cannot start the ride before the driver has arrived");
 
+        //logic to start after correct otp has been entered
+        if(!rideStartOTP.validateOTP(otp))//,RIDE_START_OTP_EXPIRY_MINUTES))//load this from db constants
+            throw new InvalidOTPException();
+
+        bookingStatus=BookingStatus.IN_RIDE;
+
+    }
+
+    public void endRide() {
+        if(!bookingStatus.equals(BookingStatus.IN_RIDE))
+            throw new InvalidActionForBooking("The ride hasn't started yet");
+        bookingStatus=BookingStatus.COMPLETED;
+    }
 }

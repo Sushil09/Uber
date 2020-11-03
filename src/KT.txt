@@ -1,0 +1,8 @@
+1)Controller-> models/services
+2)Services-> other services/other controllers/ models
+3)models(DAO) -> DB
+4)repositories(DAL)-> manage the models
+
+
+@RequestParam ->makes Spring to map request parameters from the GET/POST request to your method argument.
+@RequestBody -> makes Spring to map entire request to a model class and from there you can retrieve or set values from its getter and setter methods.

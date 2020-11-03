@@ -1,5 +1,6 @@
 package com.sjsushil09.model;
 
+import com.sjsushil09.exceptions.UnapprovedDriverExcepion;
 import lombok.*;
 
 import javax.persistence.*;
@@ -33,7 +34,7 @@ public class Driver extends AuditTable{
     private DriverApprovalStatus approvalStatus;
 
     @OneToMany(mappedBy = "driver")
-    private List<Booking> booking=new ArrayList<>();
+    private List<Booking> bookings =new ArrayList<>();
 
     private boolean isAvailable;
 
@@ -44,5 +45,11 @@ public class Driver extends AuditTable{
 
     @OneToOne
     private ExactLocation home;
+
+    public void setAvailable(Boolean available){
+        if(available && !approvalStatus.equals(DriverApprovalStatus.APPROVED))
+            throw new UnapprovedDriverExcepion("Driver approval pending or denied" +getId());
+        isAvailable=available;
+    }
 
 }

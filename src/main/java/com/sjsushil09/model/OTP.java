@@ -1,5 +1,6 @@
 package com.sjsushil09.model;
 
+import com.sjsushil09.exceptions.InvalidOTPException;
 import lombok.*;
 
 import javax.persistence.Entity;
@@ -15,6 +16,14 @@ import javax.persistence.Table;
 public class OTP extends AuditTable{
     private String code;
     private String sendToNumber;
+
+    public boolean validateOTP(OTP otp){
+        if(!code.equals(otp.getCode()))
+            return false;
+        //if the createAt + expiryMinutes>currentTime, then valid
+        //else not
+        return true;
+    }
 }
 
 //have a global expiry time

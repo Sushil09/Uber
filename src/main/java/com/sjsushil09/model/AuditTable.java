@@ -36,6 +36,8 @@ public abstract class AuditTable implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AuditTable that = (AuditTable) o;
+        if(id==null || that.id ==null)
+            return false;
         return Objects.equals(id, that.id);
     }
 
