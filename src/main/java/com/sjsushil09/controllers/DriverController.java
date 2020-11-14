@@ -2,15 +2,12 @@ package com.sjsushil09.controllers;
 
 import com.sjsushil09.exceptions.InvalidBookingException;
 import com.sjsushil09.exceptions.InvalidDriverException;
-import com.sjsushil09.model.Booking;
-import com.sjsushil09.model.Driver;
-import com.sjsushil09.model.OTP;
-import com.sjsushil09.model.Review;
+import com.sjsushil09.model.*;
 import com.sjsushil09.repository.BookingRepository;
 import com.sjsushil09.repository.DriverRepository;
 import com.sjsushil09.repository.ReviewRepository;
 import com.sjsushil09.services.BookingService;
-import com.sjsushil09.services.DriverMatchingService;
+import com.sjsushil09.services.ConstantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,6 +32,9 @@ public class DriverController {
 
     @Autowired
     BookingService bookingService;
+
+    @Autowired
+    ConstantService constantService;
 
     //->To get a particular driver details
     @GetMapping("/{driverId}")
@@ -99,7 +99,7 @@ public class DriverController {
                           @RequestBody OTP otp){
         Driver driver=getDriverFromId(driverId);
         Booking booking=getDerivedBookingFromId(bookingId,driver);
-        booking.startRide(otp);
+        booking.startRide(otp,constantService.getRideStartOTPExpiryMinutes());
         bookingRepository.save(booking);
     }
 
@@ -110,7 +110,9 @@ public class DriverController {
         Driver driver=getDriverFromId(driverId);
         Booking booking=getDerivedBookingFromId(bookingId,driver);
         booking.endRide();
+        driverRepository.save(driver);
         bookingRepository.save(booking);
+
     }
 
     @PatchMapping("{driverId}/bookings/{bookingId}/review")
@@ -142,12 +144,8 @@ public class DriverController {
         if(optionalBooking.isEmpty())
             throw new InvalidBookingException("No such booking with id="+bookingId);
         Booking booking=optionalBooking.get();
-
         if(!booking.getDriver().equals(driver))
             throw new InvalidBookingException("Driver has no booking associated to booking with id="+bookingId);
         return booking;
     }
-
-
-
 }

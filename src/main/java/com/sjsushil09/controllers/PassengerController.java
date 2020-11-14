@@ -2,19 +2,16 @@ package com.sjsushil09.controllers;
 
 import com.sjsushil09.exceptions.InvalidBookingException;
 import com.sjsushil09.exceptions.InvalidPassengerException;
-import com.sjsushil09.model.Booking;
-import com.sjsushil09.model.Passenger;
-import com.sjsushil09.model.OTP;
-import com.sjsushil09.model.Review;
+import com.sjsushil09.model.*;
 import com.sjsushil09.repository.BookingRepository;
 import com.sjsushil09.repository.PassengerRepository;
 import com.sjsushil09.repository.ReviewRepository;
 import com.sjsushil09.services.BookingService;
 import com.sjsushil09.services.DriverMatchingService;
-import com.sjsushil09.services.PassengerMatchingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -69,13 +66,52 @@ public class PassengerController {
     public void requestBooking(@RequestParam(name = "passengerId") Long passengerId,
                               @RequestBody Booking data){
         Passenger passenger=getPassengerFromId(passengerId);
-        Booking booking=Booking.builder()
+        List<ExactLocation> route=new ArrayList<>();
+        data.getRoutes().forEach(location->{
+            route.add(ExactLocation.builder()
+                    .latitude(location.getLatitude())
+                    .longitude(location.getLongitude())
+                    .build());
+        });
 
+        Booking booking=Booking.builder()
+                        .rideStartOTP(OTP.createOTP(passenger.getPhoneNumber()))
+                        .routes(route)
+                .passenger(passenger)
+                .bookingType(data.getBookingType())
+                .scheduledTime(data.getScheduledTime())
                         .build();
         bookingService.createBooking(booking);
-        bookingRepository.save(booking);
-        passengerRepository.save(passenger);
+//        bookingRepository.save(booking);
+//        passengerRepository.save(passenger);
     }
+
+    @PostMapping("/{passengerId}/bookings/{bookingid}")
+    public void retryBooking(@RequestParam(name = "passengerId") Long passengerId,
+                             @RequestParam(name = "bookingId") Long bookingId){
+        Passenger passenger=getPassengerFromId(passengerId);
+        Booking booking=getDerivedBookingFromId(bookingId,passenger);
+        bookingService.retryBooking(booking);
+    }
+
+    //To change the route of a particular booking
+    @PatchMapping("/{passengerId}/booking/{bookingId}")
+    public void updateRoute(@RequestParam(name = "passengerId") Long passengerId,
+                            @RequestParam(name = "bookingId") Long bookingId,
+                            @RequestBody Booking data){
+
+        Passenger passenger=getPassengerFromId(passengerId);
+        Booking booking=getDerivedBookingFromId(bookingId,passenger);
+        List<ExactLocation> route=new ArrayList<>();
+        data.getRoutes().forEach(location->{
+            route.add(ExactLocation.builder()
+                    .latitude(location.getLatitude())
+                    .longitude(location.getLongitude())
+                    .build());
+        });
+        bookingService.updateRoute(booking,route);
+    }
+
 
     //to cancel a booking
     @DeleteMapping("/{passengerId}/booking/{bookingId}")
@@ -121,5 +157,7 @@ public class PassengerController {
             throw new InvalidBookingException("Passenger has no booking associated to booking with id="+bookingId);
         return booking;
     }
+
+
 
 }

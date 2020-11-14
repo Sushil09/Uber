@@ -4,9 +4,7 @@ import com.sjsushil09.exceptions.UnapprovedDriverExcepion;
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Table(name = "driver")
@@ -22,6 +20,8 @@ public class Driver extends AuditTable{
     private Gender gender;
     private String name;
 
+    private String phoneNumber;
+
     @OneToOne(mappedBy = "driver") // store this only in car table but not in driver tables
     private Car car;
 
@@ -34,7 +34,10 @@ public class Driver extends AuditTable{
     private DriverApprovalStatus approvalStatus;
 
     @OneToMany(mappedBy = "driver")
-    private List<Booking> bookings =new ArrayList<>();
+    private List<Booking> bookings;
+
+    @ManyToMany(mappedBy = "notifiedDriver",cascade = CascadeType.PERSIST)
+    private Set<Booking> acceptableBooking=new HashSet<>();
 
     private boolean isAvailable;
 
@@ -42,6 +45,9 @@ public class Driver extends AuditTable{
 
     @OneToOne
     private ExactLocation lastKnownLocation;
+
+    @OneToOne
+    private Booking activeBooking=null;
 
     @OneToOne
     private ExactLocation home;
@@ -52,4 +58,10 @@ public class Driver extends AuditTable{
         isAvailable=available;
     }
 
+    public boolean canAcceptBooking(int maxWaitTimeForPreviousRide) {
+        if(isAvailable && activeBooking==null)
+            return true;
+        return activeBooking.getExpectedCompletionTime().before(DateUtils.addMinutes(new Date(),maxWaitTimeForPreviousRide ));
+        //
+    }
 }

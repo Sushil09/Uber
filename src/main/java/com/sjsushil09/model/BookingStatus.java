@@ -6,7 +6,8 @@ public enum BookingStatus {
     ASSIGNING_DRIVER("The passenger gas requested for a booking"),
     CAR_ARRIVED("The driver has arrived at the pick-up location"),
     IN_RIDE("The ride is currently in progress"),
-    COMPLETED("The ride has already been completed");
+    COMPLETED("The ride has already been completed"),
+    REACHING_PICKUP_LOCATION("The driver is reaching pickup location");
 
     private final String description;
 

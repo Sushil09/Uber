@@ -17,7 +17,14 @@ public class OTP extends AuditTable{
     private String code;
     private String sendToNumber;
 
-    public boolean validateOTP(OTP otp){
+    public static OTP createOTP(String phoneNumber){
+        return OTP.builder().
+                code("0000").       //plugin random number generator
+                sendToNumber(phoneNumber).
+                build();
+    }
+
+    public boolean validateOTP(OTP otp,int rideStartOTPExpiryMinutes){
         if(!code.equals(otp.getCode()))
             return false;
         //if the createAt + expiryMinutes>currentTime, then valid
