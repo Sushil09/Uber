@@ -81,6 +81,9 @@ public class Booking extends AuditTable{
         if(!rideStartOTP.validateOTP(otp,rideStartOTPExpiryMinutes))//,RIDE_START_OTP_EXPIRY_MINUTES))//load this from db constants
             throw new InvalidOTPException();
 
+        startTime=new Date();
+        passenger.setActiveBooking(this);
+
         bookingStatus=BookingStatus.IN_RIDE;
     }
 
@@ -88,6 +91,8 @@ public class Booking extends AuditTable{
         if(!bookingStatus.equals(BookingStatus.IN_RIDE))
             throw new InvalidActionForBooking("The ride hasn't started yet");
         driver.setActiveBooking(null);
+        startTime=new Date();
+        passenger.setActiveBooking(null);
         bookingStatus=BookingStatus.COMPLETED;
     }
 

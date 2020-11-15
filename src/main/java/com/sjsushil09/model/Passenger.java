@@ -23,6 +23,9 @@ public class Passenger extends AuditTable{
     @Enumerated(value = EnumType.STRING)
     private Gender gender;
 
+    @OneToOne
+    private Booking activeBooking = null;
+
     @OneToMany(mappedBy = "passenger")//pls don't store the info of booking inside passenger table
     //rather inside booking table i will have a column called passenger_id
     private List<Booking> bookings=new ArrayList<>();

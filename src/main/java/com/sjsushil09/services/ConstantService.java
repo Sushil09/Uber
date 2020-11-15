@@ -20,7 +20,7 @@ public class ConstantService {
         loadConstantFromDB();
     }
 
-    @Scheduled(fixedRate = TEN_MINUTES)
+    @Scheduled(fixedRate = 60*10*1000)
     private void loadConstantFromDB(){
         dBconstantRepository.findAll().forEach(dbconstant->constants.put(dbconstant.getName(),dbconstant.getValue()));
     }
@@ -44,5 +44,34 @@ public class ConstantService {
 
     public Integer getBookingProcessBeforeTime() {
         return Integer.parseInt(constants.getOrDefault("bookingProcessBeforeTime", "900000"));
+    }
+
+    public String getLocationTrackingTopicName() {
+        return constants.getOrDefault("locationTrackingTopicName", "driverMatchingTopicName");
+    }
+
+    public double getMaxDistanceForDriverMatching() {
+        return Double.parseDouble(constants.getOrDefault("maxDistanceForDriverMatching", "2"));
+    }
+
+    public int getMaxDriverETAMinutes() {
+        return Integer.parseInt(constants.getOrDefault("maxDriverETAMinutes","15"));
+    }
+
+    public double getMaxDistanceKmForDriverMatching() {
+        return Double.parseDouble(constants.getOrDefault("maxDistanceKmForDriverMatching", "2"));
+    }
+
+
+    public boolean getIsETABasedFilterEnabled() {
+        return Boolean.parseBoolean(constants.getOrDefault("isETABasedFilterEnabled", "true"));
+    }
+
+    public boolean getIsGenderFilterEnabled() {
+        return Boolean.parseBoolean(constants.getOrDefault("isGenderFilterEnabled", "true"));
+    }
+
+    public double getDefaultETASpeedKmph() {
+        return Double.parseDouble(constants.getOrDefault("defaultETASpeedKmph", "30.0"));
     }
 }

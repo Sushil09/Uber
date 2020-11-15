@@ -18,23 +18,23 @@ import java.util.Optional;
 @RequestMapping("/driver")
 public class DriverController {
 
-    @Autowired
-    DriverRepository driverRepository;
+    final DriverRepository driverRepository;
 
-    @Autowired
-    BookingRepository bookingRepository;
+    final BookingRepository bookingRepository;
 
-//    @Autowired
-//    DriverMatchingService driverMatchingService;
+    final ReviewRepository reviewRepository;
 
-    @Autowired
-    ReviewRepository reviewRepository;
+    final BookingService bookingService;
 
-    @Autowired
-    BookingService bookingService;
+    final ConstantService constantService;
 
-    @Autowired
-    ConstantService constantService;
+    public DriverController(DriverRepository driverRepository, BookingRepository bookingRepository, ReviewRepository reviewRepository, BookingService bookingService, ConstantService constantService) {
+        this.driverRepository = driverRepository;
+        this.bookingRepository = bookingRepository;
+        this.reviewRepository = reviewRepository;
+        this.bookingService = bookingService;
+        this.constantService = constantService;
+    }
 
     //->To get a particular driver details
     @GetMapping("/{driverId}")
@@ -44,7 +44,7 @@ public class DriverController {
     }
 
     //->to update the driver availability
-    @PutMapping("/{driverId}")
+    @PatchMapping("/{driverId}")
     public void changeAvailability(@RequestParam(name = "driverId") Long driverId,
                                    @RequestParam(name = "available") Boolean available){
 
@@ -60,7 +60,7 @@ public class DriverController {
         return driver.getBookings();
     }
 
-    //->to get a particular booking of a driver
+    //->to get a particular booking of a driver, only if that is applicable to driver
     @GetMapping("/{driverId}/booking/{bookingId}")
     public Booking getBooking(@RequestParam(name = "driverId") Long driverId,
                               @RequestParam(name = "bookingId") Long bookingId){
@@ -71,13 +71,12 @@ public class DriverController {
     }
 
     //to accept a particular ride
-    @PutMapping("/{driverId}/booking/{bookingId}")
+    @PostMapping("/{driverId}/bookings/{bookingId}")
     public void acceptbooking(@RequestParam(name = "driverId") Long driverId,
                               @RequestParam(name = "bookingId") Long bookingId){
         Driver driver=getDriverFromId(driverId);
-        Booking booking=getDerivedBookingFromId(bookingId,driver);
+        Booking booking=getBookingFromId(bookingId);
         bookingService.acceptBooking(driver,booking);
-//        driverMatchingService.acceptBooking(booking,driver);
     }
 
     //to cancel a booking
@@ -89,7 +88,6 @@ public class DriverController {
         Booking booking=getDerivedBookingFromId(bookingId,driver);
         //push this to task queue-producer->resposibilty of bookingService
         bookingService.cancelByDriver(driver,booking);
-//        driverMatchingService.cancelByDriver(booking,driver);
     }
 
     //to strat the ride only after confirming the otp
@@ -105,8 +103,7 @@ public class DriverController {
 
     @PatchMapping("{driverId}/bookings/{bookingId}/end")
     public void endRide(@RequestParam(name = "driverId") Long driverId,
-                        @RequestParam(name = "bookingId") Long bookingId,
-                        @RequestBody OTP otp){
+                        @RequestParam(name = "bookingId") Long bookingId){
         Driver driver=getDriverFromId(driverId);
         Booking booking=getDerivedBookingFromId(bookingId,driver);
         booking.endRide();
@@ -148,4 +145,14 @@ public class DriverController {
             throw new InvalidBookingException("Driver has no booking associated to booking with id="+bookingId);
         return booking;
     }
+
+    //giving facilty for driver to accept
+    public Booking getBookingFromId(Long bookingId){
+        Optional<Booking> booking=bookingRepository.findById(bookingId);
+        if(booking.isEmpty())
+            throw new InvalidBookingException("No such booking with id="+bookingId);
+        return booking.get();
+    }
+
+
 }

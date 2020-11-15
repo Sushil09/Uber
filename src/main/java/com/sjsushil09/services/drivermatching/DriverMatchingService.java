@@ -1,47 +1,69 @@
-package com.sjsushil09.services;
+package com.sjsushil09.services.drivermatching;
+
 
 import com.sjsushil09.model.Booking;
 import com.sjsushil09.model.Driver;
 import com.sjsushil09.model.ExactLocation;
 import com.sjsushil09.model.Passenger;
 import com.sjsushil09.repository.BookingRepository;
+import com.sjsushil09.services.ConstantService;
+import com.sjsushil09.services.ETAService;
+import com.sjsushil09.services.drivermatching.filters.DriverFilter;
+import com.sjsushil09.services.drivermatching.filters.ETABasedFilter;
+import com.sjsushil09.services.drivermatching.filters.GenderFilter;
+import com.sjsushil09.services.locationtracking.LocationTrackingService;
 import com.sjsushil09.services.messagequeue.MQMessage;
 import com.sjsushil09.services.messagequeue.MessageQueue;
 import com.sjsushil09.services.notifications.NotificationService;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class DriverMatchingService {
 
-    @Autowired
-    MessageQueue messageQueue;
+    final MessageQueue messageQueue;
 
-    @Autowired
-    ConstantService constantService;
+    final ConstantService constantService;
 
-    @Autowired
-    LocationTrackingService locationTrackingService;
+    final LocationTrackingService locationTrackingService;
 
-    @Autowired
-    NotificationService notificationService;
+    final NotificationService notificationService;
 
-    @Autowired
-    BookingRepository bookingRepository;
+    final BookingRepository bookingRepository;
+
+    final ETAService etaService;
+
+    final List<DriverFilter> filters=new ArrayList<>();
+
+    public DriverMatchingService(MessageQueue messageQueue,
+                                 ConstantService constantService,
+                                 LocationTrackingService locationTrackingService,
+                                 NotificationService notificationService,
+                                 BookingRepository bookingRepository,
+                                 ETAService etaService) {
+        this.messageQueue = messageQueue;
+        this.constantService = constantService;
+        this.locationTrackingService = locationTrackingService;
+        this.notificationService = notificationService;
+        this.bookingRepository = bookingRepository;
+        this.etaService=etaService;
+        filters.add(new ETABasedFilter(etaService,constantService));
+        filters.add(new GenderFilter());
+    }
 
     @Scheduled(fixedRate = 1000)
     public void consume(){
         MQMessage passedMessage=messageQueue.consumeMessage(constantService.getDriverMatchingTopicName());
-         if(passedMessage==null)
-             return;
-         Message message=(Message) passedMessage;
-         findNearbyDrivers(message.getBooking());
+        if(passedMessage==null)
+            return;
+        Message message=(Message) passedMessage;
+        findNearbyDrivers(message.getBooking());
     }
 
     private void findNearbyDrivers(Booking booking) {
@@ -88,7 +110,9 @@ public class DriverMatchingService {
         //acting as a consumer
     }
 
-    @Getter @Setter @AllArgsConstructor
+    @Getter
+    @Setter
+    @AllArgsConstructor
     public static class Message implements MQMessage{
         private Booking booking;
 

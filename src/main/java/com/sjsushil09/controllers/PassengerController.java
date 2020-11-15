@@ -7,7 +7,7 @@ import com.sjsushil09.repository.BookingRepository;
 import com.sjsushil09.repository.PassengerRepository;
 import com.sjsushil09.repository.ReviewRepository;
 import com.sjsushil09.services.BookingService;
-import com.sjsushil09.services.DriverMatchingService;
+import com.sjsushil09.services.drivermatching.DriverMatchingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,23 +19,27 @@ import java.util.Optional;
 @RequestMapping("/passenger")
 public class PassengerController {
 
-    @Autowired
-    PassengerRepository passengerRepository;
+    final PassengerRepository passengerRepository;
 
-    @Autowired
-    BookingRepository bookingRepository;
+    final BookingRepository bookingRepository;
 
-    @Autowired
-    DriverMatchingService driverMatchingService;
+    final DriverMatchingService driverMatchingService;
 
-//    @Autowired
-//    PassengerMatchingService passengerMatchingService;
+    final ReviewRepository reviewRepository;
 
-    @Autowired
-    ReviewRepository reviewRepository;
+    final BookingService bookingService;
 
-    @Autowired
-    BookingService bookingService;
+    public PassengerController(PassengerRepository passengerRepository,
+                               BookingRepository bookingRepository,
+                               DriverMatchingService driverMatchingService,
+                               ReviewRepository reviewRepository,
+                               BookingService bookingService) {
+        this.passengerRepository = passengerRepository;
+        this.bookingRepository = bookingRepository;
+        this.driverMatchingService = driverMatchingService;
+        this.reviewRepository = reviewRepository;
+        this.bookingService = bookingService;
+    }
 
     //->To get a particular passenger details
     @GetMapping("/{passengerId}")

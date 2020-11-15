@@ -1,4 +1,4 @@
-package com.sjsushil09.services;
+package com.sjsushil09.services.otp;
 
 import com.sjsushil09.model.OTP;
 import org.springframework.stereotype.Service;

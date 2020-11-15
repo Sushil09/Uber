@@ -36,12 +36,15 @@ public class Driver extends AuditTable{
     @OneToMany(mappedBy = "driver")
     private List<Booking> bookings;
 
-    @ManyToMany(mappedBy = "notifiedDriver",cascade = CascadeType.PERSIST)
+    @ManyToMany(mappedBy = "notifiedDrivers",cascade = CascadeType.PERSIST)
     private Set<Booking> acceptableBooking=new HashSet<>();
 
     private boolean isAvailable;
 
     private String activeCity;
+
+    @OneToOne
+    private Review avgRating;
 
     @OneToOne
     private ExactLocation lastKnownLocation;
