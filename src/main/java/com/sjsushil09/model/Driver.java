@@ -14,7 +14,7 @@ import java.util.*;
 @AllArgsConstructor
 public class Driver extends AuditTable{
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private Account account;
 
     private Gender gender;
@@ -22,7 +22,7 @@ public class Driver extends AuditTable{
 
     private String phoneNumber;
 
-    @OneToOne(mappedBy = "driver") // store this only in car table but not in driver tables
+    @OneToOne(mappedBy = "driver",cascade = CascadeType.ALL) // store this only in car table but not in driver tables
     private Car car;
 
     private String licenseDetails;

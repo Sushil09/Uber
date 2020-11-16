@@ -20,5 +20,6 @@ public class Account extends AuditTable{
 
     //get all the roles when someone fetches an account
     @ManyToMany(fetch = FetchType.EAGER)
+    @Singular
     private List<Role> roles=new ArrayList<>();
 }
